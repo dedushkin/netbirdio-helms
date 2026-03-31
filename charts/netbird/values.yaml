@@ -59,6 +59,21 @@ management:
   envFromSecret: {}
   #ENV_VAR: secretName/secretKey
 
+  init:
+    enabled: false
+    image:
+      ## @param management.initContainerImage.repository Docker image repository for the management init container.
+      ##
+      repository: dibi/envsubst
+
+      ## @param management.initContainerImage.pullPolicy Docker image pull policy for the management init container.
+      ##
+      pullPolicy: IfNotPresent
+
+      ## @param management.initContainerImage.tag Docker image tag for the management init container.
+      ##
+      tag: ""
+
   image:
     ## @param management.image.repository Docker image repository for the management component.
     ##
@@ -616,9 +631,13 @@ relay:
     ##
     port: 33080
 
-    ## @param relay.service.name Name for the relay service port.
+    ## @param relay.service.stunPort Port for the STUN service.
     ##
-    name: http
+    stunPort: 3478
+
+    ## @param relay.service.externalTrafficPolicy External traffic policy for the relay service.
+    ##
+    externalTrafficPolicy: Cluster
 
     ## @param relay.service.externalIPs External IPs for the relay service.
     ##

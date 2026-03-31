@@ -12,11 +12,20 @@ metadata:
   {{- end }}
 spec:
   type: {{ .Values.relay.service.type }}
+  externalTrafficPolicy: {{ .Values.relay.service.externalTrafficPolicy }}
   ports:
     - port: {{ .Values.relay.service.port }}
-      targetPort: {{ .Values.relay.service.name }}
+      targetPort: http
       protocol: TCP
-      name: {{ .Values.relay.service.name }}
+      name: http
+    - port: {{ .Values.relay.service.port }}
+      targetPort: quic
+      protocol: UDP
+      name: quic
+    - port: {{ .Values.relay.service.stunPort }}
+      targetPort: stun
+      protocol: UDP
+      name: stun
     {{- if .Values.relay.metrics.enabled }}
     - port: {{ .Values.relay.metrics.port}}
       targetPort: metrics

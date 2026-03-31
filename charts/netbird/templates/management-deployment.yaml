@@ -33,6 +33,40 @@ spec:
       serviceAccountName: {{ include "netbird.management.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.management.podSecurityContext | nindent 8 }}
+      {{- if .Values.management.init.enabled }}
+      initContainers:
+        - name: init-configuration
+          image: "{{ .Values.management.init.image.repository }}:{{ .Values.management.init.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.management.init.image.pullPolicy }}
+          command:
+            {{- toYaml .Values.management.init.command | nindent 12 }}
+          args: 
+            {{- toYaml .Values.management.init.args | nindent 12 }}
+          volumeMounts:
+            - mountPath: /workdir
+              name: config-template
+            - mountPath: /processed
+              name: config
+          {{- if or (.Values.management.env) (.Values.management.envRaw) (.Values.management.envFromSecret) }}
+          env:
+          {{- range $key, $val := .Values.management.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+          {{- end }}
+          {{- if .Values.management.envRaw }}
+            {{- with .Values.management.envRaw }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- range $key, $val := .Values.management.envFromSecret }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ (split "/" $val)._0 }}
+                  key: {{ (split "/" $val)._1 }}
+          {{- end }}
+          {{- end }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}-management
           securityContext:
@@ -117,9 +151,11 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        - name: config
+        - name: config-template
           configMap:
             name: {{ include "netbird.fullname" . }}-management
+        - name: config
+          emptyDir: {}
         - name: management
           {{- if .Values.management.persistentVolume.enabled }}
           persistentVolumeClaim:

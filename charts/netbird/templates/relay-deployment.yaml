@@ -38,6 +38,12 @@ spec:
             - name: http
               containerPort: {{ .Values.relay.containerPort }}
               protocol: TCP
+            - name: quic
+              containerPort: {{ .Values.relay.containerPort }}
+              protocol: UDP
+            - name: stun
+              containerPort: 3478
+              protocol: UDP
             - name: metrics
               containerPort: {{ .Values.relay.metrics.port}}
               protocol: TCP
